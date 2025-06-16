@@ -1,36 +1,1197 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
-  <meta charset="UTF-8">
-  <title>水晶手串設計器</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>晶靈手作 - 水晶手串設計平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8A2BE2',
+                        secondary: '#FF69B4',
+                        accent: '#9370DB',
+                        neutral: '#F5F5F5',
+                        dark: '#4A4A4A',
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .gradient-bg {
+                background: linear-gradient(135deg, #8A2BE2 0%, #FF69B4 100%);
+            }
+            .gradient-text {
+                background: linear-gradient(90deg, #8A2BE2, #FF69B4);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .crystal-drag-item {
+                transition: all 0.3s ease;
+            }
+            .crystal-drag-item:hover {
+                transform: scale(1.05);
+                box-shadow: 0 10px 25px -5px rgba(138, 43, 226, 0.4);
+            }
+            .bracelet-hole {
+                transition: all 0.3s ease;
+            }
+            .bracelet-hole:hover {
+                transform: scale(1.1);
+                box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
+            }
+            .nav-link {
+                position: relative;
+            }
+            .nav-link::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 2px;
+                bottom: -2px;
+                left: 0;
+                background: linear-gradient(90deg, #8A2BE2, #FF69B4);
+                transition: width 0.3s ease;
+            }
+            .nav-link:hover::after {
+                width: 100%;
+            }
+            .modal {
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .modal.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            .scroll-reveal {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.6s ease, transform 0.6s ease;
+            }
+            .scroll-reveal.active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 導航欄 -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between bg-white/90 backdrop-blur-md rounded-b-xl shadow-sm">
+            <a href="#" class="flex items-center">
+                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-3">
+                    <i class="fa fa-diamond text-white text-xl"></i>
+                </div>
+                <span class="text-xl font-bold gradient-text">晶靈手作</span>
+            </a>
+            
+            <!-- 桌面導航 -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link font-medium hover:text-primary transition-colors">首頁</a>
+                <a href="#crystals" class="nav-link font-medium hover:text-primary transition-colors">水晶庫</a>
+                <a href="#designer" class="nav-link font-medium hover:text-primary transition-colors">手串設計</a>
+                <a href="#cases" class="nav-link font-medium hover:text-primary transition-colors">客製案例</a>
+                <a href="#contact" class="nav-link font-medium hover:text-primary transition-colors">聯繫我們</a>
+            </nav>
+            
+            <!-- 行動導航按鈕 -->
+            <button id="menu-toggle" class="md:hidden text-dark focus:outline-none">
+                <i class="fa fa-bars text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- 行動導航菜單 -->
+        <div id="mobile-menu" class="md:hidden bg-white shadow-lg rounded-b-xl absolute w-full left-0 top-full transform -translate-y-full opacity-0 transition-all duration-300 pointer-events-none">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+                <a href="#home" class="py-2 px-4 hover:bg-gray-100 rounded-lg transition-colors">首頁</a>
+                <a href="#crystals" class="py-2 px-4 hover:bg-gray-100 rounded-lg transition-colors">水晶庫</a>
+                <a href="#designer" class="py-2 px-4 hover:bg-gray-100 rounded-lg transition-colors">手串設計</a>
+                <a href="#cases" class="py-2 px-4 hover:bg-gray-100 rounded-lg transition-colors">客製案例</a>
+                <a href="#contact" class="py-2 px-4 hover:bg-gray-100 rounded-lg transition-colors">聯繫我們</a>
+            </div>
+        </div>
+    </header>
 
-<body>
-  <!-- 開頭畫面 -->
-  <div id="intro" class="section">
-    <h1>歡迎來到水晶手串設計器</h1>
-    <p>在這裡，您可以設計屬於自己的水晶手串。先選擇水晶種類、珠子數量和尺寸，然後點擊珠子位置放置您選擇的水晶。</p>
-    <button id="startDesign">開始設計</button>
-  </div>
-  <!-- 設計畫面 -->
-  <div id="design" class="section" style="display: none;">
-    <h1>水晶手串設計器</h1>
-    <div class="controls">
-      <label>水晶珠數量:
-        <select id="beadCount"></select>
-      </label>
-      <label>水晶珠尺寸 (mm):
-        <select id="beadSize"></select>
-      </label>
+    <main class="pt-20">
+        <!-- 首頁區域 -->
+        <section id="home" class="min-h-screen flex items-center relative overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 to-secondary/10"></div>
+                <div class="absolute -top-20 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 py-16 relative z-10">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="scroll-reveal">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6">
+                            <span class="gradient-text">設計屬於你的</span><br>
+                            <span class="text-dark">水晶能量手串</span>
+                        </h1>
+                        <p class="text-lg text-gray-600 mb-8 max-w-lg">
+                            每顆水晶都蘊含獨特的能量與寓意，透過我們的設計工具，你可以自由組合喜愛的水晶，創造專屬於你的幸運手串。
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#designer" class="px-8 py-3 rounded-full gradient-bg text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1">
+                                開始設計
+                            </a>
+                            <a href="#crystals" class="px-8 py-3 rounded-full border-2 border-primary/30 text-primary font-medium hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all transform hover:-translate-y-1">
+                                探索水晶
+                            </a>
+                        </div>
+                        
+                        <div class="mt-12 flex items-center space-x-8">
+                            <div>
+                                <p class="text-3xl font-bold gradient-text">15+</p>
+                                <p class="text-gray-500">水晶種類</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold gradient-text">1000+</p>
+                                <p class="text-gray-500">客製設計</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold gradient-text">98%</p>
+                                <p class="text-gray-500">客戶滿意度</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative scroll-reveal" style="transition-delay: 0.2s">
+                        <div class="relative w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                            <img src="https://picsum.photos/seed/crystals1/800/1000" alt="精美水晶手串展示" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6">
+                                <h3 class="text-2xl font-bold text-white mb-2">探索水晶的奧秘</h3>
+                                <p class="text-white/80">每顆水晶都有獨一無二的能量與美麗</p>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white rounded-xl shadow-xl p-3 flex items-center justify-center">
+                            <img src="https://picsum.photos/seed/crystal1/100/100" alt="粉水晶" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <div class="absolute -top-8 -right-8 w-24 h-24 bg-white rounded-xl shadow-xl p-3 flex items-center justify-center">
+                            <img src="https://picsum.photos/seed/crystal2/100/100" alt="紫水晶" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 水晶庫區域 -->
+        <section id="crystals" class="py-20 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 scroll-reveal">
+                    <h2 class="text-[clamp(2rem,4vw,3rem)] font-bold mb-4">探索水晶世界</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">每一種水晶都有其獨特的能量與寓意，選擇與你共鳴的水晶，創造屬於你的幸運組合。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <!-- 粉晶 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="pink">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/pinkcrystal/400/300" alt="粉水晶" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">粉晶</h3>
+                            <p class="text-gray-600 mb-4">愛與人際關係、療癒情感創傷</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥128/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="pink" data-price="128" data-name="粉晶" data-img="https://picsum.photos/seed/pinkcrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 紫水晶 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="purple" style="transition-delay: 0.1s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/purplecrystal/400/300" alt="紫水晶" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">紫水晶</h3>
+                            <p class="text-gray-600 mb-4">提升直覺力、安神助眠、防小人</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥158/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="purple" data-price="158" data-name="紫水晶" data-img="https://picsum.photos/seed/purplecrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 白水晶 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="white" style="transition-delay: 0.2s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/whitecrystal/400/300" alt="白水晶" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">白水晶</h3>
+                            <p class="text-gray-600 mb-4">淨化能量、放大其他水晶功效、集中注意力</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥118/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="white" data-price="118" data-name="白水晶" data-img="https://picsum.photos/seed/whitecrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 黑曜石 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="black" style="transition-delay: 0.3s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/blackcrystal/400/300" alt="黑曜石" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">黑曜石</h3>
+                            <p class="text-gray-600 mb-4">防小人、防止負能量入侵、穩定磁場</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥98/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="black" data-price="98" data-name="黑曜石" data-img="https://picsum.photos/seed/blackcrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 黃水晶 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="yellow" style="transition-delay: 0.4s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/yellowcrystal/400/300" alt="黃水晶" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">黃水晶</h3>
+                            <p class="text-gray-600 mb-4">招財聚富、自信與表達力</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥168/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="yellow" data-price="168" data-name="黃水晶" data-img="https://picsum.photos/seed/yellowcrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 綠幽靈 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="green" style="transition-delay: 0.5s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/greencrystal/400/300" alt="綠幽靈" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">綠幽靈</h3>
+                            <p class="text-gray-600 mb-4">業績成長、正財能量、事業突破</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥188/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="green" data-price="188" data-name="綠幽靈" data-img="https://picsum.photos/seed/greencrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 紅瑪瑙 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="red" style="transition-delay: 0.6s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/redcrystal/400/300" alt="紅瑪瑙" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">紅瑪瑙</h3>
+                            <p class="text-gray-600 mb-4">提升活力、強健氣場、助人際圓融</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥138/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="red" data-price="138" data-name="紅瑪瑙" data-img="https://picsum.photos/seed/redcrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 藍紋瑪瑙 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all scroll-reveal crystal-card" data-crystal="blue" style="transition-delay: 0.7s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="https://picsum.photos/seed/bluecrystal/400/300" alt="藍紋瑪瑙" class="w-full h-full object-cover transition-transform hover:scale-110 duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">藍紋瑪瑙</h3>
+                            <p class="text-gray-600 mb-4">溫和溝通、釋放壓力、穩定情緒</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary font-bold">¥148/顆</span>
+                                <button class="px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors crystal-select-btn" data-crystal="blue" data-price="148" data-name="藍紋瑪瑙" data-img="https://picsum.photos/seed/bluecrystal/100/100">
+                                    選擇
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-12">
+                    <button id="load-more-crystals" class="px-8 py-3 rounded-full border-2 border-primary/30 text-primary font-medium hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+                        查看更多水晶 <i class="fa fa-angle-down ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 手串設計器區域 -->
+        <section id="designer" class="py-20 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 scroll-reveal">
+                    <h2 class="text-[clamp(2rem,4vw,3rem)] font-bold mb-4">手串設計器</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">發揮你的創意，設計專屬於你的水晶手串，體驗水晶能量的奇妙組合。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- 設計控制面板 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 scroll-reveal">
+                        <h3 class="text-xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-sliders text-primary mr-2"></i> 設計控制
+                        </h3>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">選擇水晶數量 (16-26顆)</label>
+                            <input type="range" id="crystal-count" min="16" max="26" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                            <div class="flex justify-between mt-2">
+                                <span class="text-sm text-gray-500">16</span>
+                                <span class="text-sm font-medium" id="crystal-count-value">20</span>
+                                <span class="text-sm text-gray-500">26</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">已選水晶</label>
+                            <div id="selected-crystals" class="min-h-[100px] bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <p class="text-gray-400 text-center">尚未選擇水晶</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">能量組合</label>
+                            <div id="energy-summary" class="min-h-[100px] bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <p class="text-gray-400 text-center">選擇水晶後顯示能量組合</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">總價</label>
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 flex justify-between items-center">
+                                <span class="font-bold">總計:</span>
+                                <span class="text-xl font-bold text-primary" id="total-price">¥0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button id="save-design" class="flex-1 px-6 py-3 rounded-full gradient-bg text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
+                                保存設計
+                            </button>
+                            <button id="order-now" class="flex-1 px-6 py-3 rounded-full border-2 border-primary/30 text-primary font-medium hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+                                立即訂購
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 手串預覽 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center scroll-reveal" style="transition-delay: 0.2s">
+                        <h3 class="text-xl font-bold mb-6">手串預覽</h3>
+                        
+                        <div class="relative w-full aspect-square max-w-md">
+                            <div id="bracelet-preview" class="absolute inset-0 flex items-center justify-center">
+                                <!-- 手串將由JS動態生成 -->
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <p class="text-gray-600">拖動水晶到預覽區域中的空位</p>
+                            <p class="text-gray-400 text-sm mt-1">點擊已放置的水晶可將其移除</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 水晶庫 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 scroll-reveal" style="transition-delay: 0.4s">
+                        <h3 class="text-xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-diamond text-primary mr-2"></i> 水晶庫
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <div class="relative">
+                                <input type="text" id="crystal-search" placeholder="搜尋水晶..." class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <i class="fa fa-search absolute right-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <div id="crystal-picker" class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                            <!-- 粉晶 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="pink" data-price="128" data-name="粉晶" data-img="https://picsum.photos/seed/pinkcrystal/100/100" data-meaning="愛與人際關係、療癒情感創傷">
+                                <img src="https://picsum.photos/seed/pinkcrystal/100/100" alt="粉晶" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">粉晶</p>
+                                <p class="text-xs text-gray-500">¥128</p>
+                            </div>
+                            
+                            <!-- 紫水晶 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="purple" data-price="158" data-name="紫水晶" data-img="https://picsum.photos/seed/purplecrystal/100/100" data-meaning="提升直覺力、安神助眠、防小人">
+                                <img src="https://picsum.photos/seed/purplecrystal/100/100" alt="紫水晶" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">紫水晶</p>
+                                <p class="text-xs text-gray-500">¥158</p>
+                            </div>
+                            
+                            <!-- 白水晶 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="white" data-price="118" data-name="白水晶" data-img="https://picsum.photos/seed/whitecrystal/100/100" data-meaning="淨化能量、放大其他水晶功效、集中注意力">
+                                <img src="https://picsum.photos/seed/whitecrystal/100/100" alt="白水晶" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">白水晶</p>
+                                <p class="text-xs text-gray-500">¥118</p>
+                            </div>
+                            
+                            <!-- 黑曜石 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="black" data-price="98" data-name="黑曜石" data-img="https://picsum.photos/seed/blackcrystal/100/100" data-meaning="防小人、防止負能量入侵、穩定磁場">
+                                <img src="https://picsum.photos/seed/blackcrystal/100/100" alt="黑曜石" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">黑曜石</p>
+                                <p class="text-xs text-gray-500">¥98</p>
+                            </div>
+                            
+                            <!-- 黃水晶 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="yellow" data-price="168" data-name="黃水晶" data-img="https://picsum.photos/seed/yellowcrystal/100/100" data-meaning="招財聚富、自信與表達力">
+                                <img src="https://picsum.photos/seed/yellowcrystal/100/100" alt="黃水晶" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">黃水晶</p>
+                                <p class="text-xs text-gray-500">¥168</p>
+                            </div>
+                            
+                            <!-- 綠幽靈 -->
+                            <div class="crystal-drag-item bg-white rounded-lg shadow border border-gray-100 p-2 cursor-move text-center" draggable="true" data-crystal="green" data-price="188" data-name="綠幽靈" data-img="https://picsum.photos/seed/greencrystal/100/100" data-meaning="業績成長、正財能量、事業突破">
+                                <img src="https://picsum.photos/seed/greencrystal/100/100" alt="綠幽靈" class="w-full h-16 object-cover rounded-md mb-2">
+                                <p class="text-sm font-medium">綠幽靈</p>
+                                <p class="text-xs text-gray-500">¥188</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 客製案例區域 -->
+        <section id="cases" class="py-20 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 scroll-reveal">
+                    <h2 class="text-[clamp(2rem,4vw,3rem)] font-bold mb-4">客製案例</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">探索由我們的客戶設計的精美水晶手串，獲得靈感，創造屬於你的獨特設計。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 案例1 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all scroll-reveal">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://picsum.photos/seed/case1/600/400" alt="愛情守護者手串" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-white mb-2">愛情守護者</h3>
+                                    <p class="text-white/80 text-sm">粉晶 + 月光石 + 紫水晶</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">愛情守護者</h3>
+                                <span class="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">熱門</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">這款手串融合了粉晶的愛情能量、月光石的女性魅力與紫水晶的安神作用，是尋找真愛與維繫感情的完美選擇。</p>
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/seed/user1/100/100" alt="用戶頭像" class="w-10 h-10 rounded-full object-cover">
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">陳小姐</p>
+                                    <div class="flex text-yellow-400 text-xs">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 案例2 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all scroll-reveal" style="transition-delay: 0.1s">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://picsum.photos/seed/case2/600/400" alt="事業騰飛手串" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-white mb-2">事業騰飛</h3>
+                                    <p class="text-white/80 text-sm">綠幽靈 + 黃水晶 + 虎眼石</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">事業騰飛</h3>
+                                <span class="px-3 py-1 bg-secondary/10 text-secondary text-sm rounded-full">新上架</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">這款手串集合了綠幽靈的事業能量、黃水晶的財富吸引力與虎眼石的決策力，助力你的事業步步高升。</p>
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/seed/user2/100/100" alt="用戶頭像" class="w-10 h-10 rounded-full object-cover">
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">李先生</p>
+                                    <div class="flex text-yellow-400 text-xs">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 案例3 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all scroll-reveal" style="transition-delay: 0.2s">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://picsum.photos/seed/case3/600/400" alt="身心平衡手串" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-white mb-2">身心平衡</h3>
+                                    <p class="text-white/80 text-sm">白水晶 + 藍紋瑪瑙 + 橄欖石</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">身心平衡</h3>
+                                <span class="px-3 py-1 bg-accent/10 text-accent text-sm rounded-full">暢銷</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">這款手串結合了白水晶的淨化能量、藍紋瑪瑙的情緒穩定與橄欖石的心輪療癒，幫助你達到身心平衡。</p>
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/seed/user3/100/100" alt="用戶頭像" class="w-10 h-10 rounded-full object-cover">
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">王小姐</p>
+                                    <div class="flex text-yellow-400 text-xs">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-12">
+                    <button class="px-8 py-3 rounded-full border-2 border-primary/30 text-primary font-medium hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+                        查看更多案例 <i class="fa fa-angle-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 聯繫表單區域 -->
+        <section id="contact" class="py-20 bg-gray-50 relative overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="scroll-reveal">
+                        <h2 class="text-[clamp(2rem,4vw,3rem)] font-bold mb-6">聯繫我們</h2>
+                        <p class="text-gray-600 mb-8 max-w-lg">
+                            有任何問題或建議？請填寫下方表單與我們聯繫，我們將在24小時內回覆您。
+                        </p>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fa fa-map-marker text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium mb-1">地址</h3>
+                                    <p class="text-gray-600">台北市信義區信義路五段100號</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fa fa-phone text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium mb-1">電話</h3>
+                                    <p class="text-gray-600">+886 2 1234 5678</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fa fa-envelope text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium mb-1">電子郵件</h3>
+                                    <p class="text-gray-600">service@crystalbracelet.com</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <a href="#" class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                <i class="fa fa-facebook"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                <i class="fa fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                <i class="fa fa-line"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                <i class="fa fa-wechat"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-8 scroll-reveal" style="transition-delay: 0.2s">
+                        <h3 class="text-2xl font-bold mb-6">訂購諮詢</h3>
+                        <form id="contact-form">
+                            <div class="mb-6">
+                                <label for="name" class="block text-gray-700 font-medium mb-2">姓名</label>
+                                <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="請輸入您的姓名">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="email" class="block text-gray-700 font-medium mb-2">電子郵件</label>
+                                <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="請輸入您的電子郵件">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="phone" class="block text-gray-700 font-medium mb-2">電話</label>
+                                <input type="tel" id="phone" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="請輸入您的電話">
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="message" class="block text-gray-700 font-medium mb-2">訊息</label>
+                                <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="請輸入您的需求或問題"></textarea>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="w-5 h-5 rounded text-primary focus:ring-primary/50">
+                                    <span class="ml-2 text-gray-700">我同意接收有關水晶手串的最新資訊和優惠</span>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="w-full px-6 py-3 rounded-full gradient-bg text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
+                                提交
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="bg-dark text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center mr-3">
+                            <i class="fa fa-diamond text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">晶靈手作</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        專注於水晶手串設計與客製，每一款作品都蘊含著獨特的能量與美麗。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-line"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">快速連結</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">首頁</a></li>
+                        <li><a href="#crystals" class="text-gray-400 hover:text-white transition-colors">水晶庫</a></li>
+                        <li><a href="#designer" class="text-gray-400 hover:text-white transition-colors">手串設計</a></li>
+                        <li><a href="#cases" class="text-gray-400 hover:text-white transition-colors">客製案例</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors">聯繫我們</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">服務</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">水晶手串設計</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">客製化服務</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">水晶能量講座</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">水晶保養指南</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">禮品包裝服務</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">聯絡資訊</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">台北市信義區信義路五段100號</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-phone text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">+886 2 1234 5678</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">service@crystalbracelet.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-clock-o text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">週一至週日 10:00-20:00</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm mb-4 md:mb-0">© 2025 晶靈手作. 保留所有權利.</p>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">隱私政策</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">使用條款</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">配送資訊</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">退換貨政策</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 彈窗通知 -->
+    <div id="notification" class="fixed bottom-6 right-6 bg-white rounded-xl shadow-lg p-4 transform translate-y-20 opacity-0 transition-all duration-300 flex items-start max-w-sm z-50">
+        <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-4 shrink-0">
+            <i id="notification-icon" class="fa fa-check"></i>
+        </div>
+        <div>
+            <h4 id="notification-title" class="font-medium text-gray-900">操作成功</h4>
+            <p id="notification-message" class="text-sm text-gray-600">您的設計已成功保存</p>
+        </div>
+        <button id="close-notification" class="ml-4 text-gray-400 hover:text-gray-600">
+            <i class="fa fa-times"></i>
+        </button>
     </div>
-    <p>點選下方的水晶顏色，再點擊珠子的位置放置。</p>
-    <div id="palette"></div>
-    <canvas id="braceletCanvas" width="500" height="500"></canvas>
-    <p class="contact">完成後請聯繫我們訂作：<a href="mailto:order@example.com">order@example.com</a></p>
-  </div>
-  <script src="script.js"></script>
-</body>
 
-</html>
+    <!-- 保存設計彈窗 -->
+    <div id="save-design-modal" class="modal fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modal-overlay"></div>
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 relative z-10 transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-6">保存設計</h3>
+            <p class="text-gray-600 mb-6">請輸入您的設計名稱，以便日後查看或修改。</p>
+            
+            <div class="mb-6">
+                <label for="design-name" class="block text-gray-700 font-medium mb-2">設計名稱</label>
+                <input type="text" id="design-name" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：我的幸運手串">
+            </div>
+            
+            <div class="flex space-x-4">
+                <button id="save-design-btn" class="flex-1 px-6 py-3 rounded-full gradient-bg text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
+                    保存
+                </button>
+                <button id="cancel-save" class="flex-1 px-6 py-3 rounded-full border-2 border-gray-200 text-gray-700 font-medium hover:border-gray-300 transition-all">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 導航欄滾動效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2', 'shadow-md');
+                navbar.classList.remove('py-3');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2', 'shadow-md');
+            }
+        });
+        
+        // 行動導航菜單
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            if (mobileMenu.classList.contains('opacity-0')) {
+                mobileMenu.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
+                mobileMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                menuToggle.innerHTML = '<i class="fa fa-times text-2xl"></i>';
+            } else {
+                mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+                mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                menuToggle.innerHTML = '<i class="fa fa-bars text-2xl"></i>';
+            }
+        });
+        
+        // 平滑滾動
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 如果是在行動模式下，點擊導航連結後關閉菜單
+                    if (mobileMenu.classList.contains('opacity-100')) {
+                        mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+                        mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                        menuToggle.innerHTML = '<i class="fa fa-bars text-2xl"></i>';
+                    }
+                }
+            });
+        });
+        
+        // 滾動顯示效果
+        const scrollElements = document.querySelectorAll('.scroll-reveal');
+        
+        const elementInView = (el, percentageScroll = 100) => {
+            const elementTop = el.getBoundingClientRect().top;
+            return (
+                elementTop <= 
+                ((window.innerHeight || document.documentElement.clientHeight) * (percentageScroll/100))
+            );
+        };
+        
+        const displayScrollElement = (element) => {
+            element.classList.add('active');
+        };
+        
+        const hideScrollElement = (element) => {
+            element.classList.remove('active');
+        };
+        
+        const handleScrollAnimation = () => {
+            scrollElements.forEach((el) => {
+                if (elementInView(el, 80)) {
+                    displayScrollElement(el);
+                } else {
+                    hideScrollElement(el);
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', () => {
+            handleScrollAnimation();
+        });
+        
+        // 初始化顯示元素
+        handleScrollAnimation();
+        
+        // 手串設計器功能
+        const braceletPreview = document.getElementById('bracelet-preview');
+        const crystalCount = document.getElementById('crystal-count');
+        const crystalCountValue = document.getElementById('crystal-count-value');
+        const selectedCrystals = document.getElementById('selected-crystals');
+        const energySummary = document.getElementById('energy-summary');
+        const totalPrice = document.getElementById('total-price');
+        const crystalDragItems = document.querySelectorAll('.crystal-drag-item');
+        const crystalSelectBtns = document.querySelectorAll('.crystal-select-btn');
+        
+        let currentCrystals = [];
+        let braceletHoles = [];
+        
+        // 生成手串預覽
+        function generateBraceletPreview(count) {
+            braceletPreview.innerHTML = '';
+            braceletHoles = [];
+            
+            const radius = Math.min(braceletPreview.offsetWidth, braceletPreview.offsetHeight) * 0.4;
+            const centerX = braceletPreview.offsetWidth / 2;
+            const centerY = braceletPreview.offsetHeight / 2;
+            
+            // 創建中心點
+            const centerPoint = document.createElement('div');
+            centerPoint.className = 'absolute w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center';
+            centerPoint.style.left = `${centerX - 6}px`;
+            centerPoint.style.top = `${centerY - 6}px`;
+            centerPoint.innerHTML = '<i class="fa fa-diamond text-primary text-xl"></i>';
+            braceletPreview.appendChild(centerPoint);
+            
+            // 創建水晶孔位
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                const hole = document.createElement('div');
+                hole.className = 'bracelet-hole absolute w-12 h-12 rounded-full bg-gray-200 border-2 border-gray-300 flex items-center justify-center cursor-pointer transition-all';
+                hole.style.left = `${x - 12}px`;
+                hole.style.top = `${y - 12}px`;
+                hole.dataset.index = i;
+                
+                // 如果已有水晶，顯示水晶
+                if (currentCrystals[i]) {
+                    hole.innerHTML = `<img src="${currentCrystals[i].img}" alt="${currentCrystals[i].name}" class="w-full h-full object-cover rounded-full">`;
+                    hole.classList.remove('bg-gray-200', 'border-gray-300');
+                    hole.classList.add('border-transparent');
+                } else {
+                    hole.innerHTML = '<i class="fa fa-plus text-gray-400"></i>';
+                }
+                
+                hole.addEventListener('click', () => {
+                    if (currentCrystals[i]) {
+                        // 移除水晶
+                        currentCrystals[i] = null;
+                        hole.innerHTML = '<i class="fa fa-plus text-gray-400"></i>';
+                        hole.classList.add('bg-gray-200', 'border-gray-300');
+                        hole.classList.remove('border-transparent');
+                        updateDesignSummary();
+                    } else {
+                        // 顯示選擇水晶的UI或彈窗
+                        showNotification('請從右側水晶庫中選擇水晶拖放到空位上', 'info');
+                    }
+                });
+                
+                // 拖放目標
+                hole.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    hole.classList.add('ring-2', 'ring-primary');
+                });
+                
+                hole.addEventListener('dragleave', () => {
+                    hole.classList.remove('ring-2', 'ring-primary');
+                });
+                
+                hole.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    hole.classList.remove('ring-2', 'ring-primary');
+                    
+                    const crystalData = JSON.parse(e.dataTransfer.getData('crystal'));
+                    currentCrystals[i] = crystalData;
+                    
+                    hole.innerHTML = `<img src="${crystalData.img}" alt="${crystalData.name}" class="w-full h-full object-cover rounded-full">`;
+                    hole.classList.remove('bg-gray-200', 'border-gray-300');
+                    hole.classList.add('border-transparent');
+                    
+                    updateDesignSummary();
+                });
+                
+                braceletPreview.appendChild(hole);
+                braceletHoles.push(hole);
+            }
+        }
+        
+        // 更新設計摘要
+        function updateDesignSummary() {
+            // 更新已選水晶
+            const selectedCrystalItems = currentCrystals.filter(c => c);
+            if (selectedCrystalItems.length > 0) {
+                selectedCrystals.innerHTML = '';
+                selectedCrystalItems.forEach((crystal, index) => {
+                    const crystalItem = document.createElement('div');
+                    crystalItem.className = 'flex items-center mb-2';
+                    crystalItem.innerHTML = `
+                        <img src="${crystal.img}" alt="${crystal.name}" class="w-8 h-8 rounded-full mr-2">
+                        <span class="text-sm">${crystal.name}</span>
+                        <button class="ml-auto text-gray-400 hover:text-red-500" data-index="${index}">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    `;
+                    
+                    crystalItem.querySelector('button').addEventListener('click', (e) => {
+                        const crystalIndex = parseInt(e.currentTarget.dataset.index);
+                        const holeIndex = currentCrystals.findIndex((c, i) => c && i >= crystalIndex);
+                        
+                        if (holeIndex !== -1) {
+                            currentCrystals[holeIndex] = null;
+                            braceletHoles[holeIndex].innerHTML = '<i class="fa fa-plus text-gray-400"></i>';
+                            braceletHoles[holeIndex].classList.add('bg-gray-200', 'border-gray-300');
+                            braceletHoles[holeIndex].classList.remove('border-transparent');
+                            updateDesignSummary();
+                        }
+                    });
+                    
+                    selectedCrystals.appendChild(crystalItem);
+                });
+            } else {
+                selectedCrystals.innerHTML = '<p class="text-gray-400 text-center">尚未選擇水晶</p>';
+            }
+            
+            // 更新能量組合
+            if (selectedCrystalItems.length > 0) {
+                energySummary.innerHTML = '';
+                const meanings = {};
+                
+                selectedCrystalItems.forEach(crystal => {
+                    const meaning = crystal.meaning || '';
+                    meaning.split('、').forEach(m => {
+                        if (m.trim()) {
+                            meanings[m.trim()] = (meanings[m.trim()] || 0) + 1;
+                        }
+                    });
+                });
+                
+                const meaningItems = Object.keys(meanings).sort((a, b) => meanings[b] - meanings[a]);
+                
+                meaningItems.forEach((meaning, index) => {
+                    if (index < 5) { // 只顯示前5個最常見的能量
+                        const meaningItem = document.createElement('div');
+                        meaningItem.className = 'flex items-center mb-2';
+                        meaningItem.innerHTML = `
+                            <div class="w-2 h-2 rounded-full bg-primary mr-2"></div>
+                            <span class="text-sm">${meaning}</span>
+                            <span class="ml-auto text-xs text-gray-500">${meanings[meaning]}顆</span>
+                        `;
+                        energySummary.appendChild(meaningItem);
+                    }
+                });
+                
+                if (meaningItems.length > 5) {
+                    const moreItem = document.createElement('div');
+                    moreItem.className = 'text-sm text-gray-500 text-center mt-2';
+                    moreItem.innerHTML = `+ ${meaningItems.length - 5} 項其他能量`;
+                    energySummary.appendChild(moreItem);
+                }
+            } else {
+                energySummary.innerHTML = '<p class="text-gray-400 text-center">選擇水晶後顯示能量組合</p>';
+            }
+            
+            // 更新總價
+            const price = selectedCrystalItems.reduce((total, crystal) => total + parseInt(crystal.price), 0);
+            totalPrice.textContent = `¥${price}`;
+        }
+        
+        // 水晶數量變更
+        crystalCount.addEventListener('input', () => {
+            crystalCountValue.textContent = crystalCount.value;
+            generateBraceletPreview(parseInt(crystalCount.value));
+        });
+        
+        // 初始化手串
+        generateBraceletPreview(parseInt(crystalCount.value));
+        
+        // 水晶拖放功能
+        crystalDragItems.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                const crystalData = {
+                    name: item.dataset.name,
+                    price: item.dataset.price,
+                    img: item.dataset.img,
+                    meaning: item.dataset.meaning
+                };
+                e.dataTransfer.setData('crystal', JSON.stringify(crystalData));
+                item.classList.add('opacity-50');
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('opacity-50');
+            });
+        });
+        
+        // 水晶選擇按鈕
+        crystalSelectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emptyHoleIndex = currentCrystals.findIndex(c => !c);
+                
+                if (emptyHoleIndex !== -1) {
+                    const crystalData = {
+                        name: btn.dataset.name,
+                        price: btn.dataset.price,
+                        img: btn.dataset.img,
+                        meaning: btn.dataset.meaning
+                    };
+                    
+                    currentCrystals[emptyHoleIndex] = crystalData;
+                    
+                    braceletHoles[emptyHoleIndex].innerHTML = `<img src="${crystalData.img}" alt="${crystalData.name}" class="w-full h-full object-cover rounded-full">`;
+                    braceletHoles[emptyHoleIndex].classList.remove('bg-gray-200', 'border-gray-300');
+                    braceletHoles[emptyHoleIndex].classList.add('border-transparent');
+                    
+                    updateDesignSummary();
+                    showNotification('已添加水晶到空位', 'success');
+                } else {
+                    showNotification('手串已滿，請先移除一些水晶', 'warning');
+                }
+            });
+        });
+        
+        // 通知功能
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationMessage = document.getElementById('notification-message');
+        const notificationIcon = document.getElementById('notification-icon');
+        const closeNotification = document.getElementById('close-notification');
+        
+        function showNotification(message, type = 'success') {
+            notificationTitle.textContent = type === 'success' ? '操作成功' : 
+                                         type === 'error' ? '操作失敗' : 
+                                         type === 'warning' ? '注意' : '訊息';
+            
+            notificationMessage.textContent = message;
+            
+            // 設置圖標和顏色
+            if (type === 'success') {
+                notificationIcon.className = 'fa fa-check';
+                notification.querySelector('div').className = 'w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-4 shrink-0';
+            } else if (type === 'error') {
+                notificationIcon.className = 'fa fa-times';
+                notification.querySelector('div').className = 'w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center mr-4 shrink-0';
+            } else if (type === 'warning') {
+                notificationIcon.className = 'fa fa-exclamation-triangle';
+                notification.querySelector('div').className = 'w-10 h-10 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center mr-4 shrink-0';
+            } else {
+                notificationIcon.className = 'fa fa-info';
+                notification.querySelector('div').className = 'w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-4 shrink-0';
+            }
+            
+            // 顯示通知
+            notification.classList.remove('translate-y-20', 'opacity-0');
+            notification.classList.add('translate-y-0', 'opacity-100');
+            
+            // 5秒後自動關閉
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+        
+        function hideNotification() {
+            notification.classList.add('translate-y-20', 'opacity-0');
+            notification.classList.remove('translate-y-0', 'opacity-100');
+        }
+        
+        closeNotification.addEventListener('click', hideNotification);
+        
+        // 保存設計彈窗
+        const saveDesignBtn = document.getElementById('save-design');
+        const saveDesignModal = document.getElementById('save-design-modal');
+        const modalContent = document.getElementById('modal-content');
