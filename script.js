@@ -3,6 +3,9 @@ const beadSizeSelect = document.getElementById('beadSize');
 const palette = document.getElementById('palette');
 const canvas = document.getElementById('braceletCanvas');
 const ctx = canvas.getContext('2d');
+const introSection = document.getElementById('intro');
+const designSection = document.getElementById('design');
+const startDesignButton = document.getElementById('startDesign');
 
 const crystals = [
   { name: '透明水晶', color: '#ffffff' },
@@ -98,6 +101,12 @@ canvas.addEventListener('click', (e) => {
 beadCountSelect.addEventListener('change', updateBeads);
 beadSizeSelect.addEventListener('change', updateBeads);
 
-initSelectors();
-initPalette();
-updateBeads();
+startDesignButton.addEventListener('click', () => {
+  introSection.style.display = 'none';
+  designSection.style.display = 'block';
+  initSelectors();
+  initPalette();
+  updateBeads();
+});
+
+   
